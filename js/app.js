@@ -501,7 +501,8 @@
     document.getElementById("adminUnlockBtn").addEventListener("click", () => {
       const val = document.getElementById("adminPassInput").value.trim();
       const cfg = storage.loadMergedConfig();
-      if (val === String(cfg.adminPasscode || "8888")) {
+      const expected = (!cfg.adminPasscode || cfg.adminPasscode === "8888") ? "1145141919810" : String(cfg.adminPasscode);
+      if (val === expected) {
         isAdminUnlocked = true;
         sessionStorage.setItem("class_voice_admin_unlocked", "1");
         updateAdminView();
@@ -524,7 +525,7 @@
       const cfg = storage.loadMergedConfig();
       document.getElementById("cfgSiteTitle").value = cfg.siteTitle || "班级民心意见箱";
       document.getElementById("cfgClassName").value = cfg.className || "";
-      document.getElementById("cfgAdminPass").value = cfg.adminPasscode || "8888";
+      document.getElementById("cfgAdminPass").value = (!cfg.adminPasscode || cfg.adminPasscode === "8888") ? "1145141919810" : cfg.adminPasscode;
       document.getElementById("configModal").classList.add("open");
     });
 
@@ -536,7 +537,7 @@
       storage.saveConfigOverride({
         siteTitle: document.getElementById("cfgSiteTitle").value.trim() || "班级民心意见箱",
         className: document.getElementById("cfgClassName").value.trim(),
-        adminPasscode: document.getElementById("cfgAdminPass").value.trim() || "8888"
+        adminPasscode: document.getElementById("cfgAdminPass").value.trim() || "1145141919810"
       });
       renderBranding();
       document.getElementById("configModal").classList.remove("open");
