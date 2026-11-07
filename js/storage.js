@@ -234,11 +234,10 @@ class VoiceStorage {
               localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(list));
               return list;
             }
-          } else {
-            // 如果云端频道首次为空，自动初始化示例数据上云
-            await this.saveAllFeedbacks([...INITIAL_DEMO_DATA]);
-            return [...INITIAL_DEMO_DATA];
           }
+          // 如果云端频道首次为空，自动初始化示例数据上云
+          await this.saveAllFeedbacks([...INITIAL_DEMO_DATA]);
+          return [...INITIAL_DEMO_DATA];
         }
       } catch (err) {
         console.warn("从 TextDB 云频道同步失败，回退到本地缓存:", err);
