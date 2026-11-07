@@ -3,592 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>班级民心意见箱 · 真匿名心声投递站</title>
-  <meta name="description" content="100%真匿名班级民意收集平台，凭专属回执码在班会公开回应跟进。" />
+  <title>班级意见箱</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- 环境光柔光背景 -->
-  <div class="ambient-bg" aria-hidden="true">
-    <div class="ambient-blob blob-1"></div>
-    <div class="ambient-blob blob-2"></div>
-    <div class="ambient-blob blob-3"></div>
-  </div>
-
-  <!-- 顶部导航栏 -->
-  <header class="top-navbar">
-    <div class="navbar-inner">
-      <div class="brand-group">
-        <div class="brand-logo" aria-hidden="true">📮</div>
-        <div class="brand-titles">
-          <span class="class-badge-top" id="navClassName">2026级 班级民心工程</span>
-          <h1 class="site-main-title" id="navSiteTitle">班级民心意见箱</h1>
-        </div>
-      </div>
-
-      <div class="nav-actions">
-        <button type="button" class="cloud-status-pill" id="cloudStatusBtn" title="点击查看或配置云端同步">
-          <span class="cloud-dot"></span>
-          <span id="cloudStatusText">本地演示模式</span>
-        </button>
-        <button type="button" class="icon-btn" id="openTransparencyBtn" title="查看真匿名技术承诺与传输报文">
-          <span>🛡️</span>
-          <span class="hide-sm">匿名检测</span>
-        </button>
-        <button type="button" class="icon-btn" id="themeToggleBtn" title="切换深色/浅色模式">
-          <span id="themeIcon">🌙</span>
-        </button>
-      </div>
+  <!-- 顶部极简标题栏 -->
+  <header class="header">
+    <div>
+      <h1 class="header-title" id="navSiteTitle">班级意见箱</h1>
+      <p class="header-sub" id="navClassName">匿名提交 · 凭回执码查询进度</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-ghost" id="themeToggleBtn" title="切换深浅色">🌙</button>
     </div>
   </header>
 
-  <!-- 主体内容区 -->
-  <main class="main-container">
-    <!-- Hero 标题与近期班会公告 -->
-    <section class="hero-section">
-      <div class="trust-pill" id="heroTrustPill" role="button" tabindex="0">
-        <span>🔒 100% 真匿名 · 无需登录 · 零设备指纹 · 凭【回执码】在班会听取回应</span>
-        <span>👉 验证</span>
-      </div>
-      <h2 class="hero-title" id="heroMainTitle">把真实想法留在这里，我们班会上见</h2>
-      <p class="hero-subtitle" id="heroSubTitle">
-        每一条建议都会生成独一无二的匿名【回执码】。你无需暴露身份，班委将在班会上直接按回执码逐条公开回应与落实。
-      </p>
-
-      <!-- 班会预告横幅 -->
-      <div class="meeting-banner" id="meetingBanner">
-        <div class="meeting-icon-box" aria-hidden="true">🎙️</div>
-        <div class="meeting-info">
-          <div class="meeting-header-row">
-            <span class="meeting-tag">近期班会集中回应预告</span>
-            <span class="meeting-time" id="bannerMeetingTime">本周五晚 19:00 · 教学楼 A302</span>
-          </div>
-          <div class="meeting-topic" id="bannerMeetingTopic">
-            集中回应本周收集的所有回执码意见
-          </div>
-          <div class="meeting-note" id="bannerMeetingNote">
-            大家提交意见后请保存好自己的【回执码】，班会上班委将直接报回执码逐条讨论答复，全程不问姓名、对事不对人！
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 四大核心功能切换栏 -->
-    <nav class="tabs-nav" aria-label="主功能切换">
-      <button type="button" class="tab-btn active" data-tab="submit">
-        <span>✍️ 匿名投递</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="wall">
-        <span>📢 班会民心墙</span>
-        <span class="tab-badge" id="publicCountBadge">0</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="lookup">
-        <span>🎫 回执码跟进</span>
-        <span class="tab-badge" id="myReceiptCountBadge">0</span>
-      </button>
-      <button type="button" class="tab-btn" data-tab="admin">
-        <span>🖥️ 班委/班会投屏</span>
-      </button>
+  <main class="container">
+    <!-- 简洁三栏切换 -->
+    <nav class="nav-tabs" aria-label="页面切换">
+      <button type="button" class="tab-btn active" data-tab="submit">提交意见</button>
+      <button type="button" class="tab-btn" data-tab="wall">意见墙 (<span id="publicCountBadge">0</span>)</button>
+      <button type="button" class="tab-btn" data-tab="lookup">回执查询</button>
     </nav>
 
-    <!-- ==================== TAB 1: 匿名投递意见 ==================== -->
+    <!-- ==================== TAB 1: 提交意见 ==================== -->
     <section class="tab-panel active" id="panel-submit">
-      <div class="submit-layout">
-        <!-- 左侧表单卡片 -->
-        <div class="glass-card">
-          <div class="form-section-title">
-            <span>📬 写下你的心声或建议</span>
-            <span style="font-size: 0.8rem; font-weight: 600; color: var(--emerald);">● 匿名保护已开启</span>
+      <div class="card">
+        <form id="feedbackForm">
+          <!-- 分类 -->
+          <div class="field">
+            <label class="label">分类</label>
+            <div class="cat-chips" id="categoryGrid"></div>
           </div>
 
-          <form id="feedbackForm">
-            <!-- 1. 意见分类 -->
-            <div class="form-group">
-              <label class="form-label">
-                <span>1. 选择意见所属板块</span>
-                <span class="label-hint">便于相应班委提前准备解决方案</span>
-              </label>
-              <div class="category-grid" id="categoryGrid"></div>
-            </div>
-
-            <!-- 2. 态度与紧迫度 -->
-            <div class="form-group">
-              <label class="form-label">
-                <span>2. 这条声音的性质</span>
-              </label>
-              <div class="mood-row" id="moodRow"></div>
-            </div>
-
-            <!-- 3. 意见标题 -->
-            <div class="form-group">
-              <label class="form-label" for="fbTitle">
-                <span>3. 一句话核心主题 <span style="color: var(--rose);">*</span></span>
-                <span class="label-hint">将在班会议程单上作为标题展示</span>
-              </label>
-              <input
-                type="text"
-                id="fbTitle"
-                class="form-input"
-                placeholder="例如：希望期中考试前组织高数小组互助答疑 / 班级群通知防刷屏建议"
-                maxlength="60"
-                required
-              />
-            </div>
-
-            <!-- 4. 详细描述 -->
-            <div class="form-group">
-              <label class="form-label" for="fbContent">
-                <span>4. 具体情况与你的想法 <span style="color: var(--rose);">*</span></span>
-                <span class="label-hint">畅所欲言，对事不对人</span>
-              </label>
-              <textarea
-                id="fbContent"
-                class="form-textarea"
-                placeholder="请详细描述你遇到的问题、观察到的现象或想对班委说的话..."
-                required
-              ></textarea>
-              <div class="quick-prompts">
-                <button type="button" class="prompt-tag" data-prompt="【目前痛点】&#10;【具体场景】">➕ 插入「痛点+场景」模板</button>
-                <button type="button" class="prompt-tag" data-prompt="【想夸夸班里】&#10;【具体事迹】">🌟 插入「匿名夸夸」模板</button>
-                <button type="button" class="prompt-tag" data-prompt="【个人困惑】&#10;【希望获得的帮助】">🤔 插入「困难求助」模板</button>
-              </div>
-            </div>
-
-            <!-- 5. 期待的解决方案（选填） -->
-            <div class="form-group">
-              <label class="form-label" for="fbSuggestion">
-                <span>5. 你觉得怎么改更好？（选填）</span>
-                <span class="label-hint">好点子能帮班会更快达成共识</span>
-              </label>
-              <input
-                type="text"
-                id="fbSuggestion"
-                class="form-input"
-                placeholder="例如：建议设一个禁言通知群，或者每周日晚汇总一次下周DDL..."
-                maxlength="150"
-              />
-            </div>
-
-            <!-- 6. 公开范围与自愿留联系方式 -->
-            <div class="privacy-options-box">
-              <label class="form-label" style="margin-bottom: 0.65rem;">
-                <span>6. 公开展示与自愿留名设置</span>
-              </label>
-
-              <div class="radio-group" id="publicRadioGroup">
-                <div class="radio-card selected" data-public="true">
-                  <input type="radio" name="isPublic" value="true" checked style="margin-top: 0.25rem;" />
-                  <div>
-                    <div class="radio-title">📢 允许在民心墙与班会大屏展示（推荐）</div>
-                    <div class="radio-desc">全班同学可看到内容并点击「+1 附议」，班会现场投屏讨论</div>
-                  </div>
-                </div>
-                <div class="radio-card" data-public="false">
-                  <input type="radio" name="isPublic" value="false" style="margin-top: 0.25rem;" />
-                  <div>
-                    <div class="radio-title">🔒 仅班委内部可见（私密反映）</div>
-                    <div class="radio-desc">不在公共民心墙展示原文，仅由班委内部查阅并妥善处理</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 自愿留联系方式折叠栏 -->
-              <div class="optional-contact-toggle" id="contactToggleBtn">
-                <div class="contact-toggle-label">
-                  <span>🙋 自愿留下联系方式（完全选填 · 仅班委后台可见）</span>
-                </div>
-                <span id="contactToggleArrow" style="font-size: 0.8rem; color: var(--brand-primary); font-weight: 700;">展开选填 ▼</span>
-              </div>
-
-              <div class="contact-Collapse-body" id="contactCollapseBody">
-                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                  💡 <strong>默认无需填写！</strong> 只有当你的问题需要班委私下一对一找你核实细节或解决个人困难时才需填写。即使公开展示意见，此栏信息也<strong>绝不会</strong>对外或在大屏显示。
-                </p>
-                <input
-                  type="text"
-                  id="fbContact"
-                  class="form-input"
-                  placeholder="选填：你的姓名 / 学号 / 微信号 / 宿舍号（不填即为100%纯匿名）"
-                  maxlength="80"
-                />
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary" id="submitBtn">
-              <span>🚀 匿名投递并生成我的【回执码】</span>
-            </button>
-          </form>
-        </div>
-
-        <!-- 右侧说明栏 -->
-        <aside>
-          <div class="glass-card side-card">
-            <h3 style="font-size: 1.02rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
-              <span>🧭</span> <span>回执码是怎么运作的？</span>
-            </h3>
-            <ul class="step-list">
-              <li class="step-item">
-                <span class="step-num">1</span>
-                <div class="step-text">
-                  <h4>零登录匿名投递</h4>
-                  <p>无需注册登录，网页不采集 IP、不读浏览器指纹，代码完全开源透明。</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <span class="step-num">2</span>
-                <div class="step-text">
-                  <h4>获得专属随机回执码</h4>
-                  <p>提交瞬间生成类似 <code>MX-8A3F</code> 的回执码，仅你自己知晓。</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <span class="step-num">3</span>
-                <div class="step-text">
-                  <h4>同学附议 + 班委整理</h4>
-                  <p>公开意见可被全班同学点击「+1 我也有同感」，高票问题优先上会。</p>
-                </div>
-              </li>
-              <li class="step-item">
-                <span class="step-num">4</span>
-                <div class="step-text">
-                  <h4>班会现场按码公开答复</h4>
-                  <p>班会上班委直接投屏播报：“下面回应 <code>MX-8A3F</code> 同学的建议”，全程保护你的隐私！</p>
-                </div>
-              </li>
-            </ul>
+          <!-- 标题 -->
+          <div class="field">
+            <label class="label" for="fbTitle">主题 <span style="color: var(--red);">*</span></label>
+            <input
+              type="text"
+              id="fbTitle"
+              class="input"
+              placeholder="简短概括你的问题或建议"
+              maxlength="60"
+              required
+            />
           </div>
 
-          <div class="glass-card side-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(79, 70, 229, 0.06));">
-            <h3 style="font-size: 0.96rem; font-weight: 800; margin-bottom: 0.45rem;">🔍 担心“假匿名”？</h3>
-            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
-              本网站托管在 GitHub Pages，所有前端代码完全公开。你可以随时点击下方按钮或按 <code>F12</code> 查看实际发送的数据包，除了你手填的文字外，没有任何隐藏字段。
-            </p>
-            <button type="button" class="btn-secondary" id="sideTransparencyBtn" style="width: 100%;">
-              <span>🛡️ 查看实时传输字段证明</span>
-            </button>
+          <!-- 详细内容 -->
+          <div class="field">
+            <label class="label" for="fbContent">具体内容 <span style="color: var(--red);">*</span></label>
+            <textarea
+              id="fbContent"
+              class="textarea"
+              placeholder="请详细描述具体情况或改进建议..."
+              required
+            ></textarea>
           </div>
-        </aside>
+
+          <!-- 选填联系方式 -->
+          <div class="field">
+            <label class="label" for="fbContact">
+              联系方式 <span class="label-sub">（选填，不填则完全匿名；仅班委可见）</span>
+            </label>
+            <input
+              type="text"
+              id="fbContact"
+              class="input"
+              placeholder="如需班委私下联系你，可留微信 / 学号 / 姓名"
+              maxlength="80"
+            />
+          </div>
+
+          <!-- 是否公开选项 -->
+          <div class="form-footer-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="fbIsPublic" checked />
+              <span>允许在班级意见墙公开展示（隐藏联系方式）</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">提交意见</button>
+        </form>
       </div>
     </section>
 
-    <!-- ==================== TAB 2: 班会公开民心墙 ==================== -->
+    <!-- ==================== TAB 2: 意见墙 ==================== -->
     <section class="tab-panel" id="panel-wall">
-      <div class="wall-toolbar">
-        <div class="filter-pills" id="wallCategoryFilters">
-          <button type="button" class="filter-pill active" data-cat="all">全部声音</button>
-        </div>
-
-        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-          <select id="wallStatusFilter" class="form-select" style="width: auto; padding: 0.45rem 0.85rem; font-size: 0.84rem;">
-            <option value="all">全部进度状态</option>
-            <option value="agenda">📋 已列入班会议程</option>
-            <option value="pending">⏳ 待班委整理</option>
-            <option value="resolved">✅ 班会已回应/落实</option>
-          </select>
-          <select id="wallSortSelect" class="form-select" style="width: auto; padding: 0.45rem 0.85rem; font-size: 0.84rem;">
-            <option value="upvotes">🔥 按同感附议数排序</option>
-            <option value="newest">🕒 按最新投递排序</option>
-          </select>
-        </div>
+      <div class="list-toolbar">
+        <div class="cat-chips" id="wallCategoryFilters"></div>
+        <select id="wallSortSelect" class="select" style="width: auto; padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+          <option value="newest">最新提交</option>
+          <option value="upvotes">最多附议</option>
+        </select>
       </div>
 
-      <div class="feedback-grid" id="publicWallGrid"></div>
+      <div id="publicWallGrid"></div>
     </section>
 
-    <!-- ==================== TAB 3: 回执码跟进与补充 ==================== -->
+    <!-- ==================== TAB 3: 回执码查询 ==================== -->
     <section class="tab-panel" id="panel-lookup">
-      <div class="glass-card lookup-box">
-        <h3 style="font-size: 1.25rem; font-weight: 800;">🎫 输入回执码 · 查询班会排期与处理结果</h3>
-        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 0.3rem;">
-          无论你是公开投递还是仅班委可见的私密投递，均可凭回执码查询进度，或匿名追加补充说明。
-        </p>
-
-        <div class="lookup-input-group">
+      <div class="card">
+        <label class="label" for="lookupCodeInput">输入回执码查询处理进度</label>
+        <div style="display: flex; gap: 0.5rem;">
           <input
             type="text"
             id="lookupCodeInput"
-            class="form-input lookup-input"
+            class="input"
             placeholder="例如：MX-8A3F"
             maxlength="12"
+            style="text-transform: uppercase; font-family: monospace;"
           />
-          <button type="button" class="btn-primary" id="lookupSearchBtn" style="width: auto; padding: 0 1.6rem;">
-            <span>🔍 查询</span>
+          <button type="button" class="btn-submit" id="lookupSearchBtn" style="width: auto; padding: 0 1.4rem;">
+            查询
           </button>
         </div>
 
-        <!-- 查询结果容器 -->
-        <div id="lookupResultContainer"></div>
+        <div id="lookupResultContainer" style="margin-top: 1rem;"></div>
       </div>
 
-      <!-- 本机投递过的回执码历史 -->
-      <div class="glass-card" style="max-width: 680px; margin: 0 auto;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-          <div>
-            <h4 style="font-size: 1rem; font-weight: 800;">📱 我在这台设备上投递过的回执码</h4>
-            <p style="font-size: 0.78rem; color: var(--text-secondary);">仅保存在你当前浏览器的本地缓存中，不会上传服务器，防忘码专用</p>
-          </div>
-          <button type="button" class="btn-secondary" id="clearMyReceiptsBtn" style="font-size: 0.76rem; padding: 0.35rem 0.75rem;">
-            🗑️ 清除本机记录
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span class="label" style="margin-bottom: 0;">本机提交记录</span>
+          <button type="button" class="btn-ghost" id="clearMyReceiptsBtn" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">
+            清空记录
           </button>
         </div>
         <div id="myLocalReceiptsList"></div>
       </div>
     </section>
 
-    <!-- ==================== TAB 4: 班委工作台与班会投屏 ==================== -->
+    <!-- ==================== 班委后台面板（默认隐藏，点击底部入口进入） ==================== -->
     <section class="tab-panel" id="panel-admin">
-      <!-- 未解锁状态 -->
-      <div class="glass-card" id="adminLockCard" style="max-width: 480px; margin: 1.5rem auto; text-align: center;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
-        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.35rem;">班委工作台 & 班会投屏入口</h3>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
-          请输入班委管理口令以整理班会议程、开启教室大屏投屏模式、导出汇总表或配置 GitHub Pages 云数据库。（默认演示口令：<code>8888</code>）
-        </p>
-        <div style="display: flex; gap: 0.6rem;">
+      <!-- 口令解锁 -->
+      <div class="card" id="adminLockCard" style="max-width: 400px; margin: 1rem auto; text-align: center;">
+        <div class="label" style="font-size: 1rem; margin-bottom: 0.75rem;">班委管理后台</div>
+        <div style="display: flex; gap: 0.5rem;">
           <input
             type="password"
             id="adminPassInput"
-            class="form-input"
-            placeholder="请输入班委管理口令..."
-            style="text-align: center; font-weight: 700;"
+            class="input"
+            placeholder="输入管理口令"
+            style="text-align: center;"
           />
-          <button type="button" class="btn-primary" id="adminUnlockBtn" style="width: auto; padding: 0 1.4rem;">
-            解锁
+          <button type="button" class="btn-submit" id="adminUnlockBtn" style="width: auto; padding: 0 1.2rem;">
+            进入
           </button>
         </div>
       </div>
 
-      <!-- 已解锁班委后台 -->
+      <!-- 解锁后管理页 -->
       <div id="adminDashboard" style="display: none;">
-        <!-- 顶部核心操作栏 -->
-        <div class="glass-card" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-          <div>
-            <h3 style="font-size: 1.18rem; font-weight: 800;">🖥️ 班委民心汇总与班会投屏中心</h3>
-            <p style="font-size: 0.84rem; color: var(--text-secondary);">
-              班会前可在此将意见标记为「已列入班会议程」，班会时点击右侧按钮直接全屏投屏逐条回应！
-            </p>
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div style="font-weight: 600; font-size: 0.95rem;">
+            共收到 <span id="adminTotalCount">0</span> 条意见
           </div>
-          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-            <button type="button" class="btn-primary" id="startProjectorBtn" style="width: auto; padding: 0.65rem 1.25rem;">
-              <span>🎬 开启班会大屏投屏模式</span>
-            </button>
-            <button type="button" class="btn-secondary" id="openConfigModalBtn">
-              <span>☁️ 云端数据库与班会设置</span>
-            </button>
-            <button type="button" class="btn-secondary" id="exportMarkdownBtn">
-              <span>📄 导出班会汇报稿 (.md)</span>
-            </button>
-            <button type="button" class="btn-secondary" id="exportCsvBtn">
-              <span>📊 导出 Excel 表格 (.csv)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 数据统计卡片 -->
-        <div class="stats-grid" id="adminStatsGrid"></div>
-
-        <!-- 筛选与演示数据清理 -->
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <span style="font-size: 0.88rem; font-weight: 700;">筛选列表：</span>
-            <select id="adminFilterSelect" class="form-select" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.84rem;">
-              <option value="all">全部投递（含私密与公开）</option>
-              <option value="private">🔒 仅班委可见的私密投递</option>
-              <option value="contact">🙋 留下了联系方式的同学</option>
-              <option value="pending">⏳ 待整理意见</option>
-              <option value="agenda">📋 已列入班会议程</option>
+          <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+            <select id="adminFilterSelect" class="select" style="width: auto; padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+              <option value="all">全部意见</option>
+              <option value="private">仅班委可见</option>
+              <option value="contact">含联系方式</option>
+              <option value="pending">待处理</option>
             </select>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button type="button" class="btn-secondary" id="clearDemoBtn" style="font-size: 0.8rem; padding: 0.4rem 0.85rem;">
-              🧹 一键清空内置示例数据
-            </button>
-            <button type="button" class="btn-secondary" id="resetDemoBtn" style="font-size: 0.8rem; padding: 0.4rem 0.85rem;">
-              🔄 恢复示例数据
-            </button>
+            <button type="button" class="btn-outline" id="exportCsvBtn">导出表格 (.csv)</button>
+            <button type="button" class="btn-outline" id="clearDemoBtn">清空示例数据</button>
+            <button type="button" class="btn-outline" id="openConfigModalBtn">设置</button>
           </div>
         </div>
 
-        <!-- 班委管理列表 -->
-        <div id="adminFeedbackList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+        <div id="adminFeedbackList"></div>
       </div>
     </section>
+
+    <!-- 底部低调班委入口 -->
+    <footer style="text-align: center; margin-top: 2.5rem; font-size: 0.78rem; color: var(--text-light);">
+      <a href="#admin" id="footerAdminLink" style="color: var(--text-light); text-decoration: none;">班委管理</a>
+    </footer>
   </main>
 
-  <!-- ==================== MODAL 1: 提交成功回执码凭证弹窗 ==================== -->
-  <div class="modal-backdrop" id="receiptModal">
-    <div class="modal-card" style="text-align: center;">
-      <div style="font-size: 3rem; line-height: 1;">🎉</div>
-      <h3 style="font-size: 1.35rem; font-weight: 800; margin-top: 0.5rem;">投递成功！这是你的专属回执码</h3>
-      <p style="font-size: 0.86rem; color: var(--text-secondary); margin-top: 0.25rem;">
-        班委将在班会上直接播报此回执码进行公开答复，请截图或复制保存
+  <!-- 提交成功弹窗 -->
+  <div class="modal-mask" id="receiptModal">
+    <div class="modal-box" style="text-align: center;">
+      <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">提交成功</div>
+      <p style="font-size: 0.82rem; color: var(--text-sub); margin-bottom: 1rem;">
+        请保存你的回执码，班会上将按此编号回应：
       </p>
-
-      <div class="receipt-ticket" id="modalTicketBox">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">匿名回执凭证 · RECEIPT CODE</span>
-          <span class="status-badge status-pending">⏳ 已匿名收录</span>
-        </div>
-        <div style="font-family: 'JetBrains Mono', Consolas, monospace; font-size: 2.2rem; font-weight: 900; color: var(--brand-primary); letter-spacing: 0.08em; margin: 0.5rem 0;" id="modalReceiptCode">
-          MX-8A3F
-        </div>
-        <div class="ticket-divider"></div>
-        <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;" id="modalReceiptTitle"></div>
-        <div style="font-size: 0.78rem; color: var(--text-secondary);" id="modalReceiptMeta"></div>
+      <div
+        id="modalReceiptCode"
+        style="font-family: monospace; font-size: 1.75rem; font-weight: 700; padding: 0.75rem; background: var(--bg-muted); border-radius: 8px; letter-spacing: 0.08em; margin-bottom: 1.2rem;"
+      >
+        MX-8A3F
       </div>
-
-      <div style="display: flex; gap: 0.75rem; margin-top: 1.35rem;">
-        <button type="button" class="btn-primary" id="copyReceiptBtn">
-          <span>📋 一键复制回执码</span>
-        </button>
-        <button type="button" class="btn-secondary" id="closeReceiptModalBtn" style="flex: 1;">
-          <span>我知道了</span>
-        </button>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn-submit" id="copyReceiptBtn">复制回执码</button>
+        <button type="button" class="btn-outline" id="closeReceiptModalBtn" style="flex: 1;">关闭</button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== MODAL 2: 100%真匿名透明检测弹窗 ==================== -->
-  <div class="modal-backdrop" id="transparencyModal">
-    <div class="modal-card">
+  <!-- 简单设置弹窗 -->
+  <div class="modal-mask" id="configModal">
+    <div class="modal-box">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.15rem; font-weight: 800;">🛡️ 100% 真匿名技术承诺与源码自检</h3>
-        <button type="button" class="btn-secondary" id="closeTransparencyBtn" style="padding: 0.3rem 0.7rem;">✕</button>
+        <span style="font-weight: 700;">基本设置</span>
+        <button type="button" class="btn-ghost" id="closeConfigModalBtn" style="padding: 0.2rem 0.5rem;">✕</button>
       </div>
-      <p style="font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 0.9rem;">
-        为了让全班同学放心说真话，本网站坚持<strong>“真匿名 + 回执码对暗号 + 自愿留联系方式”</strong>原则，郑重承诺：
-      </p>
-      <ul style="font-size: 0.85rem; color: var(--text-primary); padding-left: 1.2rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem;">
-        <li><strong>绝不要求账号登录</strong>：不接入微信授权、校园卡认证或邮箱登录。</li>
-        <li><strong>绝不采集设备指纹或 IP</strong>：不调用 Canvas 指纹、不获取地理位置、不读取剪贴板。</li>
-        <li><strong>代码完全公开可查</strong>：你可以随时按键盘 <code>F12</code> 打开浏览器「开发者工具 -> Network (网络)」，验证提交时发送的真实 JSON 数据包。</li>
-      </ul>
-      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.9rem; font-family: Consolas, monospace; font-size: 0.78rem; color: var(--text-primary); overflow-x: auto;">
-        <div style="color: var(--emerald); font-weight: 700; margin-bottom: 0.35rem;">// 实际发送的数据结构预览（仅包含你填写的表单字段）：</div>
-        <pre id="livePayloadPreview" style="margin: 0;"></pre>
+      <div class="field">
+        <label class="label">页面标题</label>
+        <input type="text" id="cfgSiteTitle" class="input" placeholder="如：班级意见箱" />
       </div>
+      <div class="field">
+        <label class="label">副标题 / 班级名称</label>
+        <input type="text" id="cfgClassName" class="input" placeholder="如：计算机1班 · 匿名提交" />
+      </div>
+      <div class="field">
+        <label class="label">班委管理口令</label>
+        <input type="text" id="cfgAdminPass" class="input" placeholder="默认 8888" />
+      </div>
+      <button type="button" class="btn-submit" id="saveConfigBtn">保存设置</button>
     </div>
   </div>
 
-  <!-- ==================== MODAL 3: 云端数据库与班会配置向导 ==================== -->
-  <div class="modal-backdrop" id="configModal">
-    <div class="modal-card" style="max-width: 680px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1.18rem; font-weight: 800;">☁️ 班级信息与 GitHub Pages 云端同步配置</h3>
-        <button type="button" class="btn-secondary" id="closeConfigModalBtn" style="padding: 0.3rem 0.7rem;">✕</button>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">班级名称与近期班会预告</label>
-        <input type="text" id="cfgClassName" class="form-input" placeholder="班级名称，如：2026级 计科1班" style="margin-bottom: 0.5rem;" />
-        <input type="text" id="cfgMeetingTime" class="form-input" placeholder="近期班会时间地点，如：本周五晚 19:00 · 教学楼 A302" style="margin-bottom: 0.5rem;" />
-        <input type="text" id="cfgMeetingTopic" class="form-input" placeholder="本期班会主题" style="margin-bottom: 0.5rem;" />
-        <input type="text" id="cfgAdminPass" class="form-input" placeholder="班委后台解锁口令（默认 8888）" />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">
-          <span>跨手机云端存储模式（已为你默认开启免注册云同步）</span>
-        </label>
-        <select id="cfgStorageMode" class="form-select" style="margin-bottom: 0.75rem;">
-          <option value="textdb">🚀 免注册即开即用云同步（默认已配好！全班跨手机实时互通）</option>
-          <option value="jsonbin">☁️ JSONBin.io 云存储（支持自定义 Master Key）</option>
-          <option value="supabase">⚡ Supabase 云数据库</option>
-          <option value="local">💻 仅本机浏览器演示模式</option>
-        </select>
-
-        <!-- TextDB 免注册云频道配置块 -->
-        <div id="cfgTextdbBox" style="background: var(--bg-subtle); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
-          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.65rem;">
-            ✅ <strong>已为你自动开通专属云端同步频道！</strong>无需注册任何第三方账号，直接上传到 GitHub Pages 后，全班同学在各自手机上投递的意见就会实时汇总到下方频道中：
-          </p>
-          <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="cfgTextdbChannel" class="form-input" placeholder="专属云频道 ID" />
-            <button type="button" class="btn-secondary" id="regenChannelBtn" style="white-space: nowrap;">🎲 换一个新频道ID</button>
-          </div>
-        </div>
-
-        <!-- JSONBin 配置块 -->
-        <div id="cfgJsonbinBox" style="background: var(--bg-subtle); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: none;">
-          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.65rem;">
-            <strong>1分钟免费开通步骤：</strong><br/>
-            ① 访问 <a href="https://jsonbin.io" target="_blank" rel="noopener" style="color: var(--brand-primary);">jsonbin.io</a> 免费注册登录，点击左侧 <strong>API Keys</strong> 复制你的 <code>X-Master-Key</code> 粘贴到下方；<br/>
-            ② 点击 <strong>「✨ 一键自动创建云端意见箱」</strong> 即可自动生成 Bin ID！
-          </p>
-          <input type="text" id="cfgJsonbinKey" class="form-input" placeholder="粘贴 JSONBin X-Master-Key (如 $2a$10$...)" style="margin-bottom: 0.5rem;" />
-          <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="cfgJsonbinId" class="form-input" placeholder="Bin ID（可点击右侧按钮自动生成）" />
-            <button type="button" class="btn-secondary" id="autoCreateBinBtn" style="white-space: nowrap;">✨ 一键自动创建</button>
-          </div>
-        </div>
-
-        <!-- Supabase 配置块 -->
-        <div id="cfgSupabaseBox" style="background: var(--bg-subtle); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: none;">
-          <input type="text" id="cfgSupabaseUrl" class="form-input" placeholder="Supabase Project URL (https://xxx.supabase.co)" style="margin-bottom: 0.5rem;" />
-          <input type="text" id="cfgSupabaseKey" class="form-input" placeholder="Supabase anon public key" />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">
-          <span>📩 附加通知：新意见同步发邮件给班长（可选）</span>
-        </label>
-        <input type="text" id="cfgWeb3FormsKey" class="form-input" placeholder="选填：粘贴 Web3Forms Access Key (在 web3forms.com 填邮箱即可免费获取)" />
-      </div>
-
-      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: flex-end;">
-        <button type="button" class="btn-secondary" id="copyConfigJsBtn">
-          <span>📋 复制 config.js 代码（用于上传 GitHub）</span>
-        </button>
-        <button type="button" class="btn-primary" id="saveConfigBtn" style="width: auto; padding: 0.65rem 1.5rem;">
-          <span>💾 保存并立即生效</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== FULLSCREEN: 班会教室大屏投屏模式 ==================== -->
-  <div class="projector-overlay" id="projectorOverlay" role="dialog" aria-label="班会大屏投屏模式">
-    <div class="projector-header">
-      <div style="display: flex; align-items: center; gap: 0.85rem;">
-        <span style="font-size: 1.6rem;">🎙️</span>
-        <div>
-          <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;" id="projClassName">班级民主生活会 · 民心回音壁</div>
-          <div style="font-size: 1.25rem; font-weight: 800;">按【回执码】公开回应同学意见（已自动隐藏所有选填私密联系方式）</div>
-        </div>
-      </div>
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <span style="font-size: 0.95rem; color: #A5B4FC; font-weight: 700;" id="projCounter">第 1 / 5 条</span>
-        <button type="button" class="btn-secondary" id="exitProjectorBtn" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);">
-          ✕ 退出投屏 (ESC)
-        </button>
-      </div>
-    </div>
-
-    <div class="projector-stage" id="projectorStage">
-      <!-- 动态渲染当前投屏的意见详情 -->
-    </div>
-
-    <div class="projector-footer">
-      <div style="display: flex; gap: 0.75rem;">
-        <button type="button" class="btn-secondary" id="projPrevBtn" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); padding: 0.75rem 1.35rem; font-size: 0.95rem;">
-          ⬅️ 上一条回执
-        </button>
-        <button type="button" class="btn-secondary" id="projNextBtn" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); padding: 0.75rem 1.35rem; font-size: 0.95rem;">
-          下一条回执 ➡️
-        </button>
-      </div>
-
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <button type="button" class="btn-primary" id="projMarkResolvedBtn" style="width: auto; background: linear-gradient(135deg, #10B981, #059669); padding: 0.75rem 1.5rem;">
-          ✅ 现场标记为「班会已回应」
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 轻提示容器 -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-wrap" id="toastContainer"></div>
 
   <script src="js/config.js"></script>
   <script src="js/storage.js"></script>
