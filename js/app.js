@@ -1,5 +1,5 @@
 /**
- * 班级意见箱 - 极简交互逻辑
+ * 班级民心意见箱 - 精简版前端交互逻辑
  */
 
 (function () {
@@ -7,8 +7,9 @@
 
   let allFeedbacks = [];
   let selectedCategory = "study";
+  let selectedIsPublic = true;
   let currentWallCat = "all";
-  let currentWallSort = "newest";
+  let currentWallSort = "upvotes";
   let isAdminUnlocked = sessionStorage.getItem("class_voice_admin_unlocked") === "1";
 
   function escapeHtml(str) {
@@ -25,47 +26,48 @@
     const container = document.getElementById("toastContainer");
     if (!container) return;
     const item = document.createElement("div");
-    item.className = "toast";
+    item.className = "toast-item";
     item.textContent = msg;
     container.appendChild(item);
-    setTimeout(() => item.remove(), 2400);
+    setTimeout(() => item.remove(), 2500);
   }
 
   function renderBranding() {
     const cfg = storage.loadMergedConfig();
-    document.title = cfg.siteTitle || "班级意见箱";
-    document.getElementById("navSiteTitle").textContent = cfg.siteTitle || "班级意见箱";
-    document.getElementById("navClassName").textContent = cfg.className || "匿名提交 · 凭回执码查询进度";
+    document.title = cfg.siteTitle || "班级民心意见箱";
+    document.getElementById("navSiteTitle").textContent = cfg.siteTitle || "班级民心意见箱";
+    document.getElementById("navClassName").textContent = cfg.className || "匿名倾听 · 班会回应";
   }
 
   function initSelectors() {
     const catGrid = document.getElementById("categoryGrid");
     catGrid.innerHTML = window.CATEGORIES.map(cat => `
-      <button type="button" class="cat-chip ${cat.id === selectedCategory ? "selected" : ""}" data-id="${cat.id}">
-        ${cat.name}
-      </button>
+      <div class="category-option ${cat.id === selectedCategory ? "selected" : ""}" data-id="${cat.id}">
+        <span>${cat.icon}</span>
+        <span>${cat.name}</span>
+      </div>
     `).join("");
 
-    catGrid.querySelectorAll(".cat-chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        selectedCategory = btn.dataset.id;
-        catGrid.querySelectorAll(".cat-chip").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
+    catGrid.querySelectorAll(".category-option").forEach(el => {
+      el.addEventListener("click", () => {
+        selectedCategory = el.dataset.id;
+        catGrid.querySelectorAll(".category-option").forEach(c => c.classList.remove("selected"));
+        el.classList.add("selected");
       });
     });
 
     const wallFilters = document.getElementById("wallCategoryFilters");
     wallFilters.innerHTML =
-      `<button type="button" class="cat-chip selected" data-cat="all">全部</button>` +
+      `<button type="button" class="filter-pill active" data-cat="all">全部</button>` +
       window.CATEGORIES.map(cat => `
-        <button type="button" class="cat-chip" data-cat="${cat.id}">${cat.name}</button>
+        <button type="button" class="filter-pill" data-cat="${cat.id}">${cat.icon} ${cat.name}</button>
       `).join("");
 
-    wallFilters.querySelectorAll(".cat-chip").forEach(btn => {
+    wallFilters.querySelectorAll(".filter-pill").forEach(btn => {
       btn.addEventListener("click", () => {
         currentWallCat = btn.dataset.cat;
-        wallFilters.querySelectorAll(".cat-chip").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
+        wallFilters.querySelectorAll(".filter-pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
         renderPublicWall();
       });
     });
@@ -99,8 +101,8 @@
 
     if (list.length === 0) {
       grid.innerHTML = `
-        <div class="card" style="text-align: center; color: var(--text-light); padding: 2.5rem 1rem;">
-          暂无公开意见
+        <div class="glass-card" style="text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted);">
+          该分类下暂无公开意见
         </div>
       `;
       return;
@@ -112,33 +114,34 @@
       const isUpvoted = upvotedIds.includes(item.id);
 
       return `
-        <div class="item-card">
-          <div class="item-head">
-            <div>
-              <span class="code-badge">#${escapeHtml(item.receiptCode)}</span>
-              <span style="color: var(--text-sub); margin-left: 0.4rem;">${escapeHtml(cat.name)}</span>
+        <article class="feedback-card">
+          <div class="card-top-bar">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="receipt-tag">#${escapeHtml(item.receiptCode)}</span>
+              <span class="cat-pill-sm" style="background: ${cat.bg}; color: ${cat.color};">
+                ${cat.icon} ${cat.name}
+              </span>
             </div>
-            <span class="status-tag ${st.className}">${escapeHtml(st.label)}</span>
+            <span class="status-badge ${st.className}">${st.icon} ${st.label}</span>
           </div>
 
-          <div style="font-weight: 600; font-size: 0.96rem; margin-bottom: 0.35rem;">
-            ${escapeHtml(item.title)}
-          </div>
-          <div class="item-body">${escapeHtml(item.content)}</div>
+          <h3 class="card-title">${escapeHtml(item.title)}</h3>
+          <p class="card-content">${escapeHtml(item.content)}</p>
 
           ${item.meetingNote ? `
-            <div class="item-reply">
-              <strong>班会/班委回应：</strong>${escapeHtml(item.meetingNote)}
+            <div class="card-meeting-note">
+              <strong>🎙️ 班会/班委回应：</strong>${escapeHtml(item.meetingNote)}
             </div>
           ` : ""}
 
-          <div class="item-foot">
-            <span>${escapeHtml(item.createdAt)}</span>
-            <button type="button" class="like-btn ${isUpvoted ? "upvoted" : ""}" data-upvote-id="${escapeHtml(item.id)}">
-              附议 ${item.upvotes || 1}
+          <div class="card-footer">
+            <span class="card-time">${escapeHtml(item.createdAt)}</span>
+            <button type="button" class="upvote-btn ${isUpvoted ? "upvoted" : ""}" data-upvote-id="${escapeHtml(item.id)}">
+              <span>👍 附议</span>
+              <span>${item.upvotes || 1}</span>
             </button>
           </div>
-        </div>
+        </article>
       `;
     }).join("");
 
@@ -164,8 +167,11 @@
     const found = allFeedbacks.find(item => item.receiptCode.toUpperCase() === code);
     if (!found) {
       container.innerHTML = `
-        <div style="padding: 1rem; background: var(--bg-muted); border-radius: 8px; font-size: 0.85rem; color: var(--text-sub);">
-          未找到回执码 <strong>${escapeHtml(code)}</strong>，请检查是否输入正确。
+        <div class="receipt-ticket" style="border-color: var(--rose); text-align: center;">
+          <h4 style="font-size: 0.96rem; font-weight: 800;">未找到回执码「${escapeHtml(code)}」</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            请检查回执码格式是否正确（如 <code>MX-8A3F</code>）
+          </p>
         </div>
       `;
       return;
@@ -176,28 +182,35 @@
     const followUps = Array.isArray(found.followUps) ? found.followUps : [];
 
     container.innerHTML = `
-      <div class="item-card" style="margin-bottom: 0;">
-        <div class="item-head">
-          <span class="code-badge">#${escapeHtml(found.receiptCode)}</span>
-          <span class="status-tag ${st.className}">${escapeHtml(st.label)}</span>
+      <div class="receipt-ticket">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <span class="receipt-tag" style="font-size: 0.95rem;">#${escapeHtml(found.receiptCode)}</span>
+          <span class="status-badge ${st.className}">${st.icon} ${st.label}</span>
         </div>
-        <div style="font-weight: 600; margin-bottom: 0.35rem;">${escapeHtml(found.title)}</div>
-        <div class="item-body">${escapeHtml(found.content)}</div>
 
-        <div class="item-reply">
-          <strong>处理进度：</strong>${found.meetingNote ? escapeHtml(found.meetingNote) : escapeHtml(st.desc)}
+        <div class="ticket-divider"></div>
+
+        <div style="font-size: 0.8rem; font-weight: 700; color: ${cat.color}; margin-bottom: 0.25rem;">
+          ${cat.icon} ${cat.name} · 投递于 ${escapeHtml(found.createdAt)}
+        </div>
+        <h4 style="font-size: 1.06rem; font-weight: 800; margin-bottom: 0.45rem;">${escapeHtml(found.title)}</h4>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); white-space: pre-line; margin-bottom: 0.75rem;">${escapeHtml(found.content)}</p>
+
+        <div class="card-meeting-note">
+          <strong>🎙️ 班会进度与回应：</strong><br/>
+          ${found.meetingNote ? escapeHtml(found.meetingNote) : escapeHtml(st.desc)}
         </div>
 
         ${followUps.length > 0 ? `
-          <div style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 0.65rem;">
-            <strong>补充记录：</strong>
-            ${followUps.map(f => `<div>[${escapeHtml(f.time)}] ${escapeHtml(f.text)}</div>`).join("")}
+          <div style="margin-top: 0.75rem; background: var(--bg-subtle); padding: 0.7rem; border-radius: 10px; font-size: 0.82rem;">
+            <div style="font-weight: 700; margin-bottom: 0.3rem;">📝 补充记录：</div>
+            ${followUps.map(f => `<div style="color: var(--text-secondary);">[${escapeHtml(f.time)}] ${escapeHtml(f.text)}</div>`).join("")}
           </div>
         ` : ""}
 
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
-          <input type="text" id="followUpInput" class="input" placeholder="如需补充说明可在此输入..." style="font-size: 0.84rem; padding: 0.45rem 0.7rem;" />
-          <button type="button" class="btn-outline" id="submitFollowUpBtn" style="white-space: nowrap;">追加</button>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.9rem; padding-top: 0.85rem; border-top: 1px dashed var(--border-strong);">
+          <input type="text" id="followUpInput" class="form-input" placeholder="凭此回执码继续匿名补充说明..." style="padding: 0.55rem 0.85rem; font-size: 0.86rem;" />
+          <button type="button" class="btn-secondary" id="submitFollowUpBtn" style="white-space: nowrap;">追加</button>
         </div>
       </div>
     `;
@@ -207,7 +220,7 @@
       const text = (input.value || "").trim();
       if (!text) return;
       await storage.addFollowUpByReceipt(found.receiptCode, text);
-      showToast("已追加补充说明");
+      showToast("✅ 已追加补充说明");
       await refreshData();
       renderLookupResult(found.receiptCode);
     });
@@ -218,26 +231,32 @@
     const myList = storage.getMyReceiptsLocal();
 
     if (myList.length === 0) {
-      listEl.innerHTML = `<div style="font-size: 0.84rem; color: var(--text-light);">暂无本机记录</div>`;
+      listEl.innerHTML = `<div style="text-align: center; padding: 1.2rem; color: var(--text-muted); font-size: 0.85rem;">暂无本机投递记录</div>`;
       return;
     }
 
-    listEl.innerHTML = myList.map(r => {
-      const matched = allFeedbacks.find(f => f.receiptCode === r.receiptCode);
-      const st = window.STATUS_MAP[matched?.status || "pending"] || window.STATUS_MAP.pending;
-      return `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
-          <div>
-            <span class="code-badge">#${escapeHtml(r.receiptCode)}</span>
-            <span style="margin-left: 0.5rem;">${escapeHtml(r.title)}</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="status-tag ${st.className}">${escapeHtml(st.label)}</span>
-            <button type="button" class="btn-ghost" data-quick-lookup="${escapeHtml(r.receiptCode)}" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">查看</button>
-          </div>
-        </div>
-      `;
-    }).join("");
+    listEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        ${myList.map(r => {
+          const matched = allFeedbacks.find(f => f.receiptCode === r.receiptCode);
+          const st = window.STATUS_MAP[matched?.status || "pending"] || window.STATUS_MAP.pending;
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.95rem; border-radius: 12px; background: var(--bg-subtle); border: 1px solid var(--border-color); gap: 0.75rem; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <span class="receipt-tag">#${escapeHtml(r.receiptCode)}</span>
+                <span style="font-size: 0.88rem; font-weight: 700;">${escapeHtml(r.title)}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-badge ${st.className}">${st.icon} ${st.label}</span>
+                <button type="button" class="btn-secondary" data-quick-lookup="${escapeHtml(r.receiptCode)}" style="padding: 0.3rem 0.65rem; font-size: 0.76rem;">
+                  查看
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
 
     listEl.querySelectorAll("[data-quick-lookup]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -262,49 +281,49 @@
 
     const listContainer = document.getElementById("adminFeedbackList");
     if (filtered.length === 0) {
-      listContainer.innerHTML = `<div class="card" style="text-align: center; color: var(--text-light);">暂无记录</div>`;
+      listContainer.innerHTML = `<div class="glass-card" style="text-align: center; color: var(--text-muted);">暂无符合条件的记录</div>`;
       return;
     }
 
     listContainer.innerHTML = filtered.map(item => {
       const cat = window.CATEGORIES.find(c => c.id === item.category) || window.CATEGORIES[0];
       return `
-        <div class="item-card">
-          <div class="item-head">
-            <div>
-              <span class="code-badge">#${escapeHtml(item.receiptCode)}</span>
-              <span style="margin-left: 0.4rem; color: var(--text-sub);">${escapeHtml(cat.name)}</span>
-              <span style="margin-left: 0.4rem; color: var(--text-light);">${item.isPublic !== false ? "公开" : "仅班委可见"}</span>
+        <div class="feedback-card">
+          <div class="card-top-bar">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="receipt-tag">#${escapeHtml(item.receiptCode)}</span>
+              <span class="cat-pill-sm" style="background: ${cat.bg}; color: ${cat.color};">${cat.icon} ${cat.name}</span>
+              <span style="font-size: 0.76rem; color: var(--text-muted);">${item.isPublic !== false ? "📢 公开" : "🔒 仅班委可见"}</span>
             </div>
-            <div style="display: flex; gap: 0.4rem; align-items: center;">
-              <select class="select admin-status-select" data-id="${escapeHtml(item.id)}" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.76rem;">
-                <option value="pending" ${item.status === "pending" ? "selected" : ""}>待整理</option>
-                <option value="agenda" ${item.status === "agenda" ? "selected" : ""}>已列入班会</option>
-                <option value="resolved" ${item.status === "resolved" ? "selected" : ""}>已回应/已落实</option>
+            <div style="display: flex; gap: 0.45rem; align-items: center;">
+              <select class="form-select admin-status-select" data-id="${escapeHtml(item.id)}" style="width: auto; padding: 0.28rem 0.6rem; font-size: 0.78rem; font-weight: 700;">
+                <option value="pending" ${item.status === "pending" ? "selected" : ""}>⏳ 待整理</option>
+                <option value="agenda" ${item.status === "agenda" ? "selected" : ""}>📋 列入班会</option>
+                <option value="resolved" ${item.status === "resolved" ? "selected" : ""}>✅ 已回应</option>
               </select>
-              <button type="button" class="btn-ghost admin-delete-btn" data-id="${escapeHtml(item.id)}" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--red);">删除</button>
+              <button type="button" class="btn-secondary admin-delete-btn" data-id="${escapeHtml(item.id)}" style="padding: 0.28rem 0.6rem; font-size: 0.76rem; color: var(--rose);">删除</button>
             </div>
           </div>
 
-          <div style="font-weight: 600; margin-bottom: 0.3rem;">${escapeHtml(item.title)}</div>
-          <div class="item-body">${escapeHtml(item.content)}</div>
+          <h4 class="card-title">${escapeHtml(item.title)}</h4>
+          <p class="card-content">${escapeHtml(item.content)}</p>
 
           ${item.contact ? `
-            <div style="font-size: 0.82rem; padding: 0.45rem 0.7rem; background: var(--accent-soft); color: var(--accent); border-radius: 6px; margin-bottom: 0.6rem;">
-              联系方式：${escapeHtml(item.contact)}
+            <div style="background: var(--brand-soft); border: 1px solid rgba(79,70,229,0.25); padding: 0.5rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.65rem;">
+              <strong>🙋 联系方式：</strong>${escapeHtml(item.contact)}
             </div>
           ` : ""}
 
-          <div style="display: flex; gap: 0.45rem;">
+          <div style="display: flex; gap: 0.5rem;">
             <input
               type="text"
-              class="input admin-note-input"
+              class="form-input admin-note-input"
               data-id="${escapeHtml(item.id)}"
               value="${escapeHtml(item.meetingNote || "")}"
               placeholder="添加班会处理备注（选填）..."
-              style="font-size: 0.82rem; padding: 0.4rem 0.65rem;"
+              style="padding: 0.45rem 0.75rem; font-size: 0.83rem;"
             />
-            <button type="button" class="btn-outline admin-save-note-btn" data-id="${escapeHtml(item.id)}" style="white-space: nowrap;">保存</button>
+            <button type="button" class="btn-secondary admin-save-note-btn" data-id="${escapeHtml(item.id)}" style="white-space: nowrap;">💾 保存</button>
           </div>
         </div>
       `;
@@ -314,7 +333,7 @@
       sel.addEventListener("change", async () => {
         const id = sel.getAttribute("data-id");
         await storage.updateFeedbackAdmin(id, { status: sel.value });
-        showToast("状态已更新");
+        showToast("✅ 状态已更新");
         await refreshData();
       });
     });
@@ -324,7 +343,7 @@
         const id = btn.getAttribute("data-id");
         const input = listContainer.querySelector(`.admin-note-input[data-id="${id}"]`);
         await storage.updateFeedbackAdmin(id, { meetingNote: input ? input.value.trim() : "" });
-        showToast("备注已保存");
+        showToast("💾 备注已保存");
         await refreshData();
       });
     });
@@ -332,7 +351,7 @@
     listContainer.querySelectorAll(".admin-delete-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-id");
-        if (!confirm("确定删除这条记录吗？")) return;
+        if (!confirm("确定删除这条意见吗？")) return;
         await storage.deleteFeedback(id);
         await refreshData();
       });
@@ -340,7 +359,7 @@
   }
 
   function exportToCsv() {
-    const headers = ["回执码", "分类", "主题", "内容", "附议数", "是否公开", "联系方式", "状态", "备注", "提交时间"];
+    const headers = ["回执码", "分类", "主题", "内容", "附议数", "是否公开", "联系方式", "状态", "班会备注", "提交时间"];
     const rows = allFeedbacks.map(f => {
       const cat = window.CATEGORIES.find(c => c.id === f.category)?.name || "";
       const st = window.STATUS_MAP[f.status]?.label || "";
@@ -363,7 +382,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `班级意见汇总_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `班级意见台账_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -380,35 +399,43 @@
   }
 
   function bindEvents() {
-    // 主题切换
     const savedTheme = localStorage.getItem("class_voice_theme") || "light";
     document.documentElement.setAttribute("data-theme", savedTheme);
-    document.getElementById("themeToggleBtn").textContent = savedTheme === "dark" ? "☀️" : "🌙";
+    document.getElementById("themeIcon").textContent = savedTheme === "dark" ? "☀️" : "🌙";
 
     document.getElementById("themeToggleBtn").addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme");
       const next = current === "dark" ? "light" : "dark";
       document.documentElement.setAttribute("data-theme", next);
       localStorage.setItem("class_voice_theme", next);
-      document.getElementById("themeToggleBtn").textContent = next === "dark" ? "☀️" : "🌙";
+      document.getElementById("themeIcon").textContent = next === "dark" ? "☀️" : "🌙";
     });
 
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
 
-    // 底部班委入口
     document.getElementById("footerAdminLink").addEventListener("click", (e) => {
       e.preventDefault();
       switchTab("admin");
     });
 
-    // 提交表单
+    const radioCards = document.querySelectorAll("#publicRadioGroup .radio-card");
+    radioCards.forEach(card => {
+      card.addEventListener("click", () => {
+        radioCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        const radio = card.querySelector("input[type='radio']");
+        if (radio) radio.checked = true;
+        selectedIsPublic = card.getAttribute("data-public") === "true";
+      });
+    });
+
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
-      submitBtn.textContent = "提交中...";
+      submitBtn.innerHTML = "<span>⏳ 提交中...</span>";
 
       try {
         const created = await storage.addFeedback({
@@ -417,7 +444,7 @@
           title: document.getElementById("fbTitle").value,
           content: document.getElementById("fbContent").value,
           suggestion: "",
-          isPublic: document.getElementById("fbIsPublic").checked,
+          isPublic: selectedIsPublic,
           contact: document.getElementById("fbContact").value
         });
 
@@ -426,19 +453,20 @@
         document.getElementById("fbContact").value = "";
 
         document.getElementById("modalReceiptCode").textContent = created.receiptCode;
+        document.getElementById("modalReceiptTitle").textContent = created.title;
         document.getElementById("receiptModal").classList.add("open");
         await refreshData();
       } catch (err) {
-        alert("提交失败：" + err.message);
+        alert("提交遇到问题：" + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = "提交意见";
+        submitBtn.innerHTML = "<span>🚀 提交意见并生成回执码</span>";
       }
     });
 
     document.getElementById("copyReceiptBtn").addEventListener("click", () => {
       const code = document.getElementById("modalReceiptCode").textContent.trim();
-      navigator.clipboard.writeText(code).then(() => showToast(`已复制回执码 ${code}`));
+      navigator.clipboard.writeText(code).then(() => showToast(`📋 已复制回执码 ${code}`));
     });
 
     document.getElementById("closeReceiptModalBtn").addEventListener("click", () => {
@@ -463,7 +491,6 @@
       showToast("已清空本机记录");
     });
 
-    // 班委解锁
     function updateAdminView() {
       document.getElementById("adminLockCard").style.display = isAdminUnlocked ? "none" : "block";
       document.getElementById("adminDashboard").style.display = isAdminUnlocked ? "block" : "none";
@@ -479,7 +506,7 @@
         sessionStorage.setItem("class_voice_admin_unlocked", "1");
         updateAdminView();
       } else {
-        showToast("口令错误");
+        showToast("❌ 口令不正确");
       }
     });
 
@@ -490,12 +517,12 @@
       if (!confirm("确定清空示例数据吗？")) return;
       await storage.clearDemoData();
       await refreshData();
-      showToast("已清空示例数据");
+      showToast("🧹 已清空示例数据");
     });
 
     document.getElementById("openConfigModalBtn").addEventListener("click", () => {
       const cfg = storage.loadMergedConfig();
-      document.getElementById("cfgSiteTitle").value = cfg.siteTitle || "班级意见箱";
+      document.getElementById("cfgSiteTitle").value = cfg.siteTitle || "班级民心意见箱";
       document.getElementById("cfgClassName").value = cfg.className || "";
       document.getElementById("cfgAdminPass").value = cfg.adminPasscode || "8888";
       document.getElementById("configModal").classList.add("open");
@@ -507,13 +534,13 @@
 
     document.getElementById("saveConfigBtn").addEventListener("click", () => {
       storage.saveConfigOverride({
-        siteTitle: document.getElementById("cfgSiteTitle").value.trim() || "班级意见箱",
+        siteTitle: document.getElementById("cfgSiteTitle").value.trim() || "班级民心意见箱",
         className: document.getElementById("cfgClassName").value.trim(),
         adminPasscode: document.getElementById("cfgAdminPass").value.trim() || "8888"
       });
       renderBranding();
       document.getElementById("configModal").classList.remove("open");
-      showToast("设置已保存");
+      showToast("✅ 设置已保存");
     });
   }
 
